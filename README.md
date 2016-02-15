@@ -17,3 +17,10 @@ Katso ohjeet tiedostosta [ohjeet_fi.txt](ohjeet_fi.txt).
 [pic1]: https://raw.githubusercontent.com/miikkas/nickcolor256/master/nickcolor256a.png "/COLOR PREVIEW"
 
 [pic2]: https://raw.githubusercontent.com/miikkas/nickcolor256/master/nickcolor256b.png "Some ugly colours in action"
+
+## License
+
+This irssi script is placed in Public Domain.
+
+If your country doesn't have proper laws for Public Domain content, I'm willing
+to sell you a license for 250 €.
