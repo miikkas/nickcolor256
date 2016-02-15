@@ -1,0 +1,154 @@
+Nick Color 256 – ohjeet
+=======================
+
+Lue käyttämäsi ohjelman mukaiset kohdat seuraavien otsikoiden alta:
+- Terminaaliemulaattori
+- Terminaalimultiplekseri
+- Irssi
+
+
+Terminaaliemulaattori
+---------------------
+
+PuTTY:
+......
+
+Asetuksista (vasemmalta ”Category:”-tekstin alapuolelta)
+- otsikon ”Window” alapuolelta ”Colours”-välilehti
+    * [x] Allow terminal to use xterm 256-colour mode
+- otsikon ”Connection” alapuolelta ”Data”-välilehti
+    * Terminal-type string: putty-256color
+
+Irssi ConnectBot:
+.................
+
+Kolmen päällekäisen pisteen valikosta ”Settings”
+- otsikon ”Terminal emulation” alapuolelta ”Emulation mode”
+    * (*) xterm-256color
+
+Huom! ”xterm-256color” saattaa aiheuttaa outoja rivien katkeamisia
+ConnectBotilla ja sen johdannaisilla. Saatat joutua tyytymään valintaan
+”screen”, jolloin joudut tyytymään pienempään värivalikoimaan.
+
+urxvt:
+......
+
+Muokkaa tiedostoa: ~/.Xdefaults
+
+Lisää sinne rivi:
+
+    urxvt*termName: rxvt-unicode-256color
+
+Näin saat TERM-nimisen environment variablen arvoksi rxvt-unicode-256color, eli
+terminfo-tiedostoksi (katso man terminfo), jota ohjelmat käyttävät, valikoituu
+ainakin Ubuntulla:
+
+    /usr/share/terminfo/r/rxvt-unicode-256color
+
+Muut:
+.....
+
+Googleta ”256 colors <terminaalisi nimi>” ilman lainausmerkkejä ja kohdan
+<terminaalisi nimi> tilalla käyttämäsi terminaaliemulaattori (ilman
+kulmasulkeita).
+
+
+Terminaalimultiplekseri
+-----------------------
+
+Screen:
+.......
+
+Tarvitset kotihakemistoosi tiedoston nimeltä ”.screenrc” (ilman
+lainausmerkkejä).
+
+Tähän tiedostoon tarvitset seuraavan rivin (ilman sisennystä):
+
+    term screen-256color
+
+Lisäksi screen täytyy käynnistää uudelleen, joten jos sinulla on irssi auki
+screenissä, joka on aukaistu ennen kyseisen tiedoston luomista, joudut
+sammuttamaan irssin ja screenin ja käynnistämään screenin uudelleen. Pelkkä
+”Ctrl+A+D”-näppäinyhdistelmän painaminen ja komennon ”screen -rd” syöttäminen
+ei riitä.
+
+Jos et osaa luoda kyseistä tiedostoa, voit suorittaa seuraavan komennon:
+
+    echo "term screen-256color" >> ~/.screenrc
+
+Tmux:
+.....
+
+Tarvitset kotihakemistoosi tiedoston nimeltä ”.tmux.conf” (ilman
+lainausmerkkejä).
+
+Tähän tiedostoon tarvitset seuravan rivin (ilman sisennystä):
+
+    set -g default-terminal "screen-256color"
+
+Mitä luultavimmin joudut käynnistämään Tmuxin uudelleen (katso ohjeet
+screenille).
+
+Jos et osaa luoda kyseistä tiedostoa, voit suorittaa seuraavan komennon:
+
+    echo 'set -g default-terminal "screen-256color"' >> ~/.tmux.conf
+
+
+Irssi
+-----
+
+Irssin versio:
+..............
+
+Tarvitset irssistä vähintään version 0.8.17. Tätä ei välttämättä löydy Linux-
+jakeluiden pakettienhallinnoista valmiiksi, joten saatat joutua kääntämään
+oman.
+
+Voit tarkistaa irssisi version irssissä komennolla:
+
+    /version
+
+Ennen irssin käynnistämistä voit kokeilla komentoa ”tput colors” (ilman
+lainausmerkkejä). Jos komennon antama numero on 256, voit jatkaa seuraavaan
+kohtaan.
+
+Irssissä voi myös suorittaa seuraavan komennon käytössä olevan TERM-muuttujan
+tarkistamiseksi:
+
+    /eval echo $TERM
+
+Nick Color 256:
+...............
+
+Lataa nickcolor.pl kotihakemistosi alihakemistoon ~/.irssi/scripts/autorun
+osoitteesta:
+
+    https://raw.githubusercontent.com/miikkas/nickcolor256/master/nickcolor256.pl
+
+Jos et osaa, voit suoritaa seuraavan komennon:
+
+    wget --directory-prefix=$HOME/.irssi/scripts/autorun https://raw.githubusercontent.com/miikkas/nickcolor256/master/nickcolor256.pl
+
+Muista poistaa vanha versio, mikäli sinulla on se käytössä. Onnistuu komennolla:
+
+    rm ~/.irssi/scripts/autorun/nickcolor.pl
+
+Nyt voit käynnistää irssin, tai jos kerkesit jo käynnistää sen, ladata skriptan
+käsin irssin sisältä komennoilla:
+
+    /script unload nickcolor
+    /script load ~/.irssi/scripts/autorun/nickcolor256.pl
+
+Nick Color 256:n ohjeet saat irssissä esiin ikkunaan numero 1 komennolla:
+
+    /help color
+
+Nick Color 256:ssa tulee mukana myös kanavan irkkaajien nickit väritettyinä
+näyttävä komento, joka on muuten lähes samanlainen jo olemassa olevan /names-
+komennon kanssa. Voit ottaa komennon käyttöön irssissä komennoilla:
+
+    /alias n cnicks
+    /save
+
+Näiden jälkeen komento ”/n” (ilman lainausmerkkejä) millä tahansa kanavalla
+annettuna näyttää kanavalaiset omilla väreillään.
