@@ -39,11 +39,28 @@ Lisää sinne rivi:
 
     urxvt*termName: rxvt-unicode-256color
 
+Muista lopettaa nykyinen urxvt-sessiosi ja käynnistää tilalle uusi!
+
 Näin saat TERM-nimisen environment variablen arvoksi rxvt-unicode-256color, eli
 terminfo-tiedostoksi (katso man terminfo), jota ohjelmat käyttävät, valikoituu
 ainakin Ubuntulla:
 
     /usr/share/terminfo/r/rxvt-unicode-256color
+
+xterm:
+......
+
+Muokkaa tiedostoa: ~/.Xresources
+
+Lisää sinne rivi:
+
+    xterm*termName: xterm-256color
+
+Voit tehdä tämän myös suoraan komennolla:
+
+    echo "xterm*termName: xterm-256color" >> $HOME/.Xresources
+
+Muista lopettaa nykyinen xterm-sessiosi ja käynnistää tilalle uusi!
 
 Muut:
 .....
