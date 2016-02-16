@@ -227,7 +227,7 @@ sub display_help_color {
     my $cmd_prefix_char = substr(Irssi::settings_get_str('cmdchars'), 0, 1);
     my $color_help = <<"END_HELP";
 
-Syntax:
+%_Syntax:%_
 
 COLOR SET [-bg] <nick> <color>
 COLOR SHOW <nick>
@@ -238,7 +238,7 @@ COLOR LIST
 COLOR PREVIEW
 COLOR SAVE
 
-Parameters:
+%_Parameters:%_
 
     SET:               Sets the selected color for the nick.
     SHOW:              Shows the currently assigned color for the nick.
@@ -251,7 +251,7 @@ Parameters:
 
     -bg:               The color is the background color for the nick.
 
-Description:
+%_Description:%_
 
     Sets user-specified colors for nicks so, that when those nicks interact on
     channels (by, e.g., talking), they are colorized with the assigned color.
@@ -264,7 +264,7 @@ Description:
     must be used. I.e. ${cmd_prefix_char}COLOR SET SomeNick 5 will not work - instead of 5 use
     05.)
 
-Examples:
+%_Examples:%_
 
     ${cmd_prefix_char}COLOR
     ${cmd_prefix_char}COLOR PREVIEW
@@ -277,7 +277,7 @@ Examples:
     ${cmd_prefix_char}COLOR CLEAR MyBot
     ${cmd_prefix_char}COLOR SAVE
 
-See also: CNICKS
+%_See also:%_ CNICKS
 END_HELP
     Irssi::print($color_help, MSGLEVEL_CLIENTCRAP);
 }
@@ -286,11 +286,11 @@ sub display_help_cnicks {
     my $cmd_prefix_char = substr(Irssi::settings_get_str('cmdchars'), 0, 1);
     my $cnicks_help = <<"END_HELP";
 
-Syntax:
+%_Syntax:%_
 
 CNICKS
 
-Description:
+%_Description:%_
 
     Like the internal NAMES command, but displays the nicks with the colors
     they have been assigned with the COLOR command in the Nick Color 256
@@ -300,12 +300,12 @@ Description:
     easily use CNICKS instead. The Irssi configuration should be saved
     after settings the alias (default command ${cmd_prefix_char}SAVE). 
 
-Examples:
+%_Examples:%_
 
     ${cmd_prefix_char}CNICKS
     ${cmd_prefix_char}ALIAS N CNICKS
 
-See also: COLOR
+%_See also:%_ COLOR
 END_HELP
     Irssi::print($cnicks_help, MSGLEVEL_CLIENTCRAP);
 }
