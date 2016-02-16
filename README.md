@@ -10,7 +10,11 @@ Katso ohjeet tiedostosta [ohjeet_fi.txt](ohjeet_fi.txt).
 
 ## Screenshots
 
+The output of `/COLOR PREVIEW` showing the available colours on a 256 colour terminal:
+
 ![alt text][pic1]
+
+Nick Color 256 in action on a test channel:
 
 ![alt text][pic2]
 
