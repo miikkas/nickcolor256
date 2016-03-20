@@ -12,7 +12,7 @@ our %IRSSI = (
     name        => "nickcolor256",
     description => "Assign a specific color for any nicks. Based on the public domain licensed nickcolor.pl by Timo Sirainen and Ian Peters, with some modifications by Tuukka Wahtera.",
     license     => "Public Domain",
-    changed     => "2016-01-09T19:27+0300"
+    changed     => "2016-03-20T21:07+0300"
 );
 
 # hm.. i should make it possible to use the existing one..
@@ -358,10 +358,10 @@ sub cmd_color {
     my $altnick = $color;
     my $cmd_prefix_char = substr(Irssi::settings_get_str('cmdchars'), 0, 1);
 
-    $op = lc $op;
+    $op = lc $op unless !$op;
 
     if (!$op) {
-        display_help_color;
+        Irssi::print ("Not enough parameters given");
     } elsif ($op eq "save") {
         save_colors;
         $modified = 0;
@@ -510,6 +510,8 @@ sub cmd_color {
         }
     } elsif ($op eq "preview") {
         preview_colors;
+    } else {
+        Irssi::print ("Unknown command: color " . lc $op);
     }
 }
 
@@ -660,6 +662,21 @@ Irssi::command_bind('help', sub {
     }
 });
 
+# https://github.com/irssi/irssi/blob/master/docs/perl.txt
+# Replace sig_channel_joined at:
+# https://github.com/irssi/irssi/blob/master/src/fe-common/core/fe-channels.c
+Irssi::signal_add_last('channel joined', sub {
+    my ($channel) = @_;
+    my $server = $channel->{server};
+
+    # TODO: Check [lookandfeel] show_names_on_join = ON
+    # also add an own option for colored names list, default = ON
+
+    cmd_cnicks undef, $server, $channel;
+    
+    Irssi::signal_stop;
+});
+
 Irssi::signal_add_first('complete word', sub {
     # Add autocomplete for nicks when using the COLOR command
     
@@ -671,7 +688,7 @@ Irssi::signal_add_first('complete word', sub {
     # Ensure we are dealing with the COLOR command
     # and the SET, SHOW or CLEAR subcommand
     
-    my ($color_cmd, $color_subcmd, $bgswitch) = split " ", $linestart;
+    my ($color_cmd, $color_subcmd, $switch_param) = split " ", $linestart;
     return if (!$color_cmd or !$color_subcmd);
     $color_cmd = lc $color_cmd;
     $color_subcmd = lc $color_subcmd;
@@ -684,18 +701,22 @@ Irssi::signal_add_first('complete word', sub {
 
     # Add those nicks that start with what the user has already written
 
-    if ($color_subcmd eq 'remalt' and !$bgswitch) {
+    if ($color_subcmd eq 'remalt' and !$switch_param) {
         push @$strings, (grep(/^$word/i, keys %altnicks));
-    } elsif ($color_subcmd eq 'remalt' and $bgswitch) {
-        push @$strings, (grep(/^$word/i, @{$altnicks{$bgswitch}}));
+    } elsif ($color_subcmd eq 'remalt' and $switch_param) {
+        push @$strings, (grep(/^$word/i, @{$altnicks{$switch_param}}));
+    } elsif ($color_subcmd eq 'addalt' and $switch_param) {
+        # Do not add the saved nicks; no-one probably wants them as altnicks
     } else {
         push @$strings, (grep(/^$word/i, keys %saved_colors));
     }
 
     if ($color_subcmd eq 'set') {
         # Add the optional background switch
-        push(@$strings, '-bg') if (!$bgswitch and '-bg' =~ /^$word/i);
-        
+        push(@$strings, '-bg') if (!$switch_param and '-bg' =~ /^$word/i);
+    }
+
+    if ($color_subcmd eq 'set' or $color_subcmd eq 'addalt') {
         if ($window->{active} && ($window->{active}->{type} eq "CHANNEL")) {
             # Add the nicks from the currently open channel, if the window is a
             # channel and if the user is assigning a new nick a color
