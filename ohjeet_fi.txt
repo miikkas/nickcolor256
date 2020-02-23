@@ -134,6 +134,14 @@ tarkistamiseksi:
 
     /eval echo $TERM
 
+Irssin asetukset
+................
+
+Tuki 24-bittisille väreille täytyy erikseen asettaa päälle:
+
+    /set colors_ansi_24bit on
+    /save
+
 Nick Color 256:
 ...............
 

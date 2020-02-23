@@ -1,3 +1,9 @@
+=head1 Nickcolor256
+
+Colorise nicks.
+
+=cut
+use feature 'signatures';
 use strict;
 use warnings;
 use Irssi;
@@ -12,7 +18,7 @@ our %IRSSI = (
     name        => "nickcolor256",
     description => "Assign a specific color for any nicks. Based on the public domain licensed nickcolor.pl by Timo Sirainen and Ian Peters, with some modifications by Tuukka Wahtera.",
     license     => "Public Domain",
-    changed     => "2016-03-20T21:07+0300"
+    changed     => "2020-02-23T16:50+0200"
 );
 
 # hm.. i should make it possible to use the existing one..
@@ -20,13 +26,15 @@ Irssi::theme_register([
   'pubmsg_hilight', '{pubmsghinick $0 $3 $1}$2'
 ]);
 
+# TODO: Maybe have a proper data structure instead of these...
 my %saved_colors;
 my %saved_bgcolors;
 my %altnicks;
 my %session_colors;
 my %session_bgcolors;
-my $color_filename = "$ENV{HOME}/.irssi/saved_colors";
+use constant COLOR_FILENAME => "$ENV{HOME}/.irssi/saved_colors";
 my $modified = 0;
+# TODO: This should be constant, too:
 my %old_to_new = (
     1 => "00", 2 => "01", 3 => "02", 4 => "0C",
     5 => "04", 6 => "05", 7 => "06", 8 => "0E",
@@ -34,27 +42,39 @@ my %old_to_new = (
     13 => "0D", 14 => "08", 15 => "07", 0 => "0F"
     );
 
-sub validate_color {
-    my ($color) = @_;
+=item validate_color
+
+Make sure the given color is something we can parse as a color code.
+
+=cut
+
+sub validate_color($color) {
     $color = uc $color;
-    return if (length($color) != 2);
-    my $fst = ord(substr($color, 0, 1));
-    return if (!(ord('0') <= $fst and $fst <= ord('7')));
-    my $snd = ord(substr($color, 1, 1));
-    return if ($fst == ord('0') and !((ord('0') <= $snd and $snd <= ord('9')) or (ord('A') <= $snd and $snd <= ord('F'))));
-    return if ((ord('1') <= $fst and $fst <= ord('6')) and !((ord('0') <= $snd and $snd<= ord('9')) or (ord('A') <= $snd and $snd <= ord('Z'))));
-    return if ($fst == ord('7') and !((ord('A') <= $snd and $snd <= ord('X'))));
+    
+    if (length($color) == 2) {
+        my $fst = ord(substr($color, 0, 1));
+        return if (!(ord('0') <= $fst and $fst <= ord('7')));
+        my $snd = ord(substr($color, 1, 1));
+        return if ($fst == ord('0') and !((ord('0') <= $snd and $snd <= ord('9')) or (ord('A') <= $snd and $snd <= ord('F'))));
+        return if ((ord('1') <= $fst and $fst <= ord('6')) and !((ord('0') <= $snd and $snd<= ord('9')) or (ord('A') <= $snd and $snd <= ord('Z'))));
+        return if ($fst == ord('7') and !((ord('A') <= $snd and $snd <= ord('X'))));
+    } elsif (length($color) == 7) {
+    } else {
+        return;
+    }
 
     return $color;
 }
 
-sub get_color_str {
-    my ($color, $bgcolor, $escape_percent) = @_;
-
+sub get_color_str($color, $bgcolor, $escape_percent) {
     my $color_str = "";
     if ($color) {
         $color_str .= "%" if $escape_percent == 1;
-        $color_str .= "%X$color";
+        if (substr($color, 0, 1) eq "#") {
+            $color_str .= "%Z" . substr $color, 1;
+        } else {
+            $color_str .= "%X$color";
+        }
     }
     if ($bgcolor) {
         $color_str .= "%" if $escape_percent == 1;
@@ -63,8 +83,7 @@ sub get_color_str {
     return $color_str;
 }
 
-sub get_color {
-    my ($nick) = @_;
+sub get_color($nick) {
     my ($color, $bgcolor);
 
     # Someone could, in theory, change their nick to someone else's altnick.
@@ -92,28 +111,26 @@ sub get_color {
 
 sub load_colors {
     my $file_ver;
-    open COLORS, $color_filename;
+    open COLORS, COLOR_FILENAME;
 
-    Irssi::print("\nLoading saved colors from $color_filename ...", MSGLEVEL_CLIENTCRAP);
+    Irssi::print("\nLoading saved colors from " . COLOR_FILENAME . " ...", MSGLEVEL_CLIENTCRAP);
     
     while (<COLORS>) {
         my @lines = split "\n";
-        my $continue_ = 0;
         foreach my $line (@lines) {
-            $continue_ = 0;
             if ($line =~ /^\$VERSION=/ && !$file_ver) {
                 (undef, $file_ver) = split "=", $line;
-                $continue_ = 1;
+                next;
             }
 
             # The file was created before the introduction of the version string
-            if (!$file_ver and !$continue_) {
+            if (!$file_ver) {
                 my ($nick, $color) = split ":", $line;
                 $saved_colors{$nick} = $old_to_new{$color};
             }
 
             # The file supports 256 colors
-            if ($file_ver and $file_ver eq "256" and !$continue_) {
+            if ($file_ver and $file_ver eq "256") {
                 my ($nick, $color, $bgcolor, $altnicks_str) = split ":", $line;
                 my $v_color = validate_color $color;
                 if (!$v_color) {
@@ -158,11 +175,11 @@ sub load_colors {
 }
 
 sub save_colors {
-    open COLORS, ">" . $color_filename;
+    open COLORS, ">" . COLOR_FILENAME;
     # TODO: Switch to allow saving of session_colors as altnicks
 
     my $total_nicks = keys %saved_colors;
-    Irssi::print("\nSaving $total_nicks colored nicks to $color_filename ...", MSGLEVEL_CLIENTCRAP);
+    Irssi::print("\nSaving $total_nicks colored nicks to " . COLOR_FILENAME . " ...", MSGLEVEL_CLIENTCRAP);
 
     print COLORS "\$VERSION=256\n";
     
@@ -547,6 +564,7 @@ sub cmd_cnicks {
     my $width = 0;
 
     # FIXME: Users with BOTH ops and voices currently go in front...
+    # Solution? Maybe iterate through a *copy* with the lower privileges removed...
     $channel->print("Users of $channel->{name}:", MSGLEVEL_CLIENTCRAP);
     foreach my $nick_data (sort { $b->{op} <=> $a->{op}           or
                                   $b->{halfop} <=> $a->{halfop}   or
