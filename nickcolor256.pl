@@ -81,7 +81,7 @@ sub get_color {
         # If this nick is someone's alternative nick.
         foreach my $altnick_owner (keys %altnicks) {
             my @current_altnicks = @{$altnicks{$altnick_owner}};
-            if ($nick ~~ @current_altnicks) {
+            if (grep { $_ eq $nick } @current_altnicks) {
                 $color = $saved_colors{$altnick_owner};
                 $bgcolor = $saved_bgcolors{$altnick_owner};
             }
@@ -432,7 +432,7 @@ sub cmd_color {
                 Irssi::print("\n$nick has not been assigned any color.", MSGLEVEL_CLIENTCRAP);
                 Irssi::print("Assign a color for $nick first: enter ${cmd_prefix_char}COLOR SET $nick <colorcode>", MSGLEVEL_CLIENTCRAP);
             } else {
-                if ($altnick ~~ @{$altnicks{$nick}}) {
+                if (grep { $_ eq $altnick } @{$altnicks{$nick}}) {
                     Irssi::print("\n$nick already has the alternative nick $altnick!", MSGLEVEL_CLIENTCRAP);
                 } else {
                     push @{$altnicks{$nick}}, $altnick;
@@ -451,7 +451,7 @@ sub cmd_color {
                 Irssi::print("\n$nick has not been assigned any color.", MSGLEVEL_CLIENTCRAP);
                 Irssi::print("Assign a color for $nick first: enter ${cmd_prefix_char}COLOR SET $nick <colorcode>", MSGLEVEL_CLIENTCRAP);
             } else {
-                if ($altnick ~~ @{$altnicks{$nick}}) {
+                if (grep { $_ eq $altnick } @{$altnicks{$nick}}) {
                     my $index = 0;
                     $index++ until @{$altnicks{$nick}}[$index] eq $altnick;
                     splice(@{$altnicks{$nick}}, $index, 1);
