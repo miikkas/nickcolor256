@@ -655,10 +655,10 @@ Irssi::command_bind('help', sub {
     $cmd =~ s/^\s+|\s+$//g; # Strip whitespace
     if ($cmd eq 'color') {
         display_help_color;
-        Irssi::signal_stop;
+        Irssi::signal_stop();
     } elsif ($cmd eq 'cnicks') {
         display_help_cnicks;
-        Irssi::signal_stop;
+        Irssi::signal_stop();
     }
 });
 
@@ -674,7 +674,7 @@ Irssi::signal_add_last('channel joined', sub {
 
     cmd_cnicks undef, $server, $channel;
 
-    Irssi::signal_stop;
+    Irssi::signal_stop();
 });
 
 Irssi::signal_add_first('complete word', sub {
@@ -741,5 +741,5 @@ Irssi::signal_add_first('complete word', sub {
 
     @$strings = sort {lc $a cmp lc $b} @$strings;
 
-    Irssi::signal_stop;
+    Irssi::signal_stop();
 });
