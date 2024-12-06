@@ -12,7 +12,7 @@ our %IRSSI = (
     name        => "nickcolor256",
     description => "Assign a specific color for any nicks. Based on the public domain licensed nickcolor.pl by Timo Sirainen and Ian Peters, with some modifications by Tuukka Wahtera.",
     license     => "Public Domain",
-    changed     => "2016-03-20T21:07+0300"
+    changed     => "2016-03-20T21:07+0300",
 );
 
 # hm.. i should make it possible to use the existing one..
@@ -31,7 +31,7 @@ my %old_to_new = (
     1 => "00", 2 => "01", 3 => "02", 4 => "0C",
     5 => "04", 6 => "05", 7 => "06", 8 => "0E",
     9 => "0A", 10 => "03", 11 => "0B", 12 => "09",
-    13 => "0D", 14 => "08", 15 => "07", 0 => "0F"
+    13 => "0D", 14 => "08", 15 => "07", 0 => "0F",
     );
 
 sub validate_color {
