@@ -3,9 +3,6 @@ use warnings;
 use Irssi;
 use POSIX;
 
-# FUTURE: True Color support
-# - https://gist.github.com/XVilka/8346728
-
 our $VERSION = "256";
 our %IRSSI = (
     authors     => "Miikka Salminen",
@@ -15,9 +12,9 @@ our %IRSSI = (
     changed     => "2016-03-20T21:07+0300",
 );
 
-# hm.. i should make it possible to use the existing one..
+# hm.. i should make it possible to use the existing hilight format…
 Irssi::theme_register([
-  'pubmsg_hilight', '{pubmsghinick $0 $3 $1}$2'
+    'pubmsg_hilight', '{pubmsghinick $0 $3 $1}$2',
 ]);
 
 my %saved_colors;
@@ -25,7 +22,7 @@ my %saved_bgcolors;
 my %altnicks;
 my %session_colors;
 my %session_bgcolors;
-my $color_filename = "$ENV{HOME}/.irssi/saved_colors";
+use constant COLOR_FILENAME => "$ENV{HOME}/.irssi/saved_colors";
 my $modified = 0;
 my %old_to_new = (
     1 => "00", 2 => "01", 3 => "02", 4 => "0C",
@@ -92,9 +89,9 @@ sub get_color {
 
 sub load_colors {
     my $file_ver;
-    open COLORS, $color_filename;
+    open COLORS, COLOR_FILENAME;
 
-    Irssi::print("\nLoading saved colors from $color_filename ...", MSGLEVEL_CLIENTCRAP);
+    Irssi::print("\nLoading saved colors from" . COLOR_FILENAME . "...", MSGLEVEL_CLIENTCRAP);
 
     while (<COLORS>) {
         my @lines = split "\n";
@@ -158,11 +155,11 @@ sub load_colors {
 }
 
 sub save_colors {
-    open COLORS, ">" . $color_filename;
+    open COLORS, ">" . COLOR_FILENAME;
     # TODO: Switch to allow saving of session_colors as altnicks
 
     my $total_nicks = keys %saved_colors;
-    Irssi::print("\nSaving $total_nicks colored nicks to $color_filename ...", MSGLEVEL_CLIENTCRAP);
+    Irssi::print("\nSaving $total_nicks colored nicks to " . COLOR_FILENAME . "...", MSGLEVEL_CLIENTCRAP);
 
     print COLORS "\$VERSION=256\n";
 
@@ -312,7 +309,7 @@ END_HELP
 
 # If someone we've colored (either through the saved colors, or the hash
 # function) changes their nick, we'd like to keep the same color associated
-# with them (but only in the session_colors, ie a temporary mapping).
+# with them (but only in the session_colors, i.e. a temporary mapping).
 
 sub sig_nick {
     my ($server, $newnick, $nick, $address) = @_;
@@ -345,6 +342,10 @@ sub sig_public {
     # Let's colorize this nick (or use the default color if no color found).
     # TODO: Get the definitions from theme and inject the color into the string.
     if (!$color) {
+        # This is the same format that pubmsg has after /FORMAT -reset pubmsg
+        # $0 = the nick
+        # $1 = the message
+        # $2 = nick mode on the channel
         $server->command('/^format pubmsg {pubmsgnick $2 {pubnick $0}}$1');
     } else {
         my $color_str = get_color_str $color, $bgcolor, 0;
@@ -633,7 +634,7 @@ sub cmd_cnicks {
     $channel->print($channel->{name} . ": Total of $nick_count nicks [$chanops ops, $chanhalfops halfops, $chanvoices voices, $channormals normal]", MSGLEVEL_CLIENTCRAP);
 }
 
-load_colors;
+load_colors();
 
 my $BASE_CMD = 'color';
 Irssi::command_bind("$BASE_CMD set", \&cmd_color);
