@@ -3,21 +3,18 @@ use warnings;
 use Irssi;
 use POSIX;
 
-# FUTURE: True Color support
-# - https://gist.github.com/XVilka/8346728
-
 our $VERSION = "256";
 our %IRSSI = (
     authors     => "Miikka Salminen",
     name        => "nickcolor256",
     description => "Assign a specific color for any nicks. Based on the public domain licensed nickcolor.pl by Timo Sirainen and Ian Peters, with some modifications by Tuukka Wahtera.",
     license     => "Public Domain",
-    changed     => "2016-03-20T21:07+0300"
+    changed     => "2016-03-20T21:07+0300",
 );
 
-# hm.. i should make it possible to use the existing one..
+# hm.. i should make it possible to use the existing hilight format…
 Irssi::theme_register([
-  'pubmsg_hilight', '{pubmsghinick $0 $3 $1}$2'
+    'pubmsg_hilight', '{pubmsghinick $0 $3 $1}$2',
 ]);
 
 my %saved_colors;
@@ -25,13 +22,13 @@ my %saved_bgcolors;
 my %altnicks;
 my %session_colors;
 my %session_bgcolors;
-my $color_filename = "$ENV{HOME}/.irssi/saved_colors";
+use constant COLOR_FILENAME => "$ENV{HOME}/.irssi/saved_colors";
 my $modified = 0;
 my %old_to_new = (
     1 => "00", 2 => "01", 3 => "02", 4 => "0C",
     5 => "04", 6 => "05", 7 => "06", 8 => "0E",
     9 => "0A", 10 => "03", 11 => "0B", 12 => "09",
-    13 => "0D", 14 => "08", 15 => "07", 0 => "0F"
+    13 => "0D", 14 => "08", 15 => "07", 0 => "0F",
     );
 
 sub validate_color {
@@ -81,7 +78,7 @@ sub get_color {
         # If this nick is someone's alternative nick.
         foreach my $altnick_owner (keys %altnicks) {
             my @current_altnicks = @{$altnicks{$altnick_owner}};
-            if ($nick ~~ @current_altnicks) {
+            if (grep { $_ eq $nick } @current_altnicks) {
                 $color = $saved_colors{$altnick_owner};
                 $bgcolor = $saved_bgcolors{$altnick_owner};
             }
@@ -92,10 +89,10 @@ sub get_color {
 
 sub load_colors {
     my $file_ver;
-    open COLORS, $color_filename;
+    open COLORS, COLOR_FILENAME;
 
-    Irssi::print("\nLoading saved colors from $color_filename ...", MSGLEVEL_CLIENTCRAP);
-    
+    Irssi::print("\nLoading saved colors from" . COLOR_FILENAME . "...", MSGLEVEL_CLIENTCRAP);
+
     while (<COLORS>) {
         my @lines = split "\n";
         my $continue_ = 0;
@@ -118,7 +115,7 @@ sub load_colors {
                 my $v_color = validate_color $color;
                 if (!$v_color) {
                     Irssi::print("Invalid color $color for $nick! Skipping.", MSGLEVEL_CLIENTCRAP);
-                } else { 
+                } else {
                     $saved_colors{$nick} = $v_color;
 
                     if ($bgcolor) {
@@ -138,7 +135,7 @@ sub load_colors {
             }
         }
     }
-    
+
     close COLORS;
 
     if (!$file_ver) {
@@ -158,14 +155,14 @@ sub load_colors {
 }
 
 sub save_colors {
-    open COLORS, ">" . $color_filename;
+    open COLORS, ">" . COLOR_FILENAME;
     # TODO: Switch to allow saving of session_colors as altnicks
 
     my $total_nicks = keys %saved_colors;
-    Irssi::print("\nSaving $total_nicks colored nicks to $color_filename ...", MSGLEVEL_CLIENTCRAP);
+    Irssi::print("\nSaving $total_nicks colored nicks to " . COLOR_FILENAME . "...", MSGLEVEL_CLIENTCRAP);
 
     print COLORS "\$VERSION=256\n";
-    
+
     foreach my $nick (keys %saved_colors) {
         my $color = $saved_colors{$nick};
         $color = "" if not $color;
@@ -298,7 +295,7 @@ CNICKS
 
     The default alias of N to NAMES can be overwritten to allow the user to
     easily use CNICKS instead. The Irssi configuration should be saved
-    after settings the alias (default command ${cmd_prefix_char}SAVE). 
+    after settings the alias (default command ${cmd_prefix_char}SAVE).
 
 %_Examples:%_
 
@@ -312,7 +309,7 @@ END_HELP
 
 # If someone we've colored (either through the saved colors, or the hash
 # function) changes their nick, we'd like to keep the same color associated
-# with them (but only in the session_colors, ie a temporary mapping).
+# with them (but only in the session_colors, i.e. a temporary mapping).
 
 sub sig_nick {
     my ($server, $newnick, $nick, $address) = @_;
@@ -343,8 +340,12 @@ sub sig_public {
     my ($color, $bgcolor) = get_color $nick;
 
     # Let's colorize this nick (or use the default color if no color found).
-    # TODO: Get the definitions from theme and inject the color into the string. 
+    # TODO: Get the definitions from theme and inject the color into the string.
     if (!$color) {
+        # This is the same format that pubmsg has after /FORMAT -reset pubmsg
+        # $0 = the nick
+        # $1 = the message
+        # $2 = nick mode on the channel
         $server->command('/^format pubmsg {pubmsgnick $2 {pubnick $0}}$1');
     } else {
         my $color_str = get_color_str $color, $bgcolor, 0;
@@ -432,7 +433,7 @@ sub cmd_color {
                 Irssi::print("\n$nick has not been assigned any color.", MSGLEVEL_CLIENTCRAP);
                 Irssi::print("Assign a color for $nick first: enter ${cmd_prefix_char}COLOR SET $nick <colorcode>", MSGLEVEL_CLIENTCRAP);
             } else {
-                if ($altnick ~~ @{$altnicks{$nick}}) {
+                if (grep { $_ eq $altnick } @{$altnicks{$nick}}) {
                     Irssi::print("\n$nick already has the alternative nick $altnick!", MSGLEVEL_CLIENTCRAP);
                 } else {
                     push @{$altnicks{$nick}}, $altnick;
@@ -451,7 +452,7 @@ sub cmd_color {
                 Irssi::print("\n$nick has not been assigned any color.", MSGLEVEL_CLIENTCRAP);
                 Irssi::print("Assign a color for $nick first: enter ${cmd_prefix_char}COLOR SET $nick <colorcode>", MSGLEVEL_CLIENTCRAP);
             } else {
-                if ($altnick ~~ @{$altnicks{$nick}}) {
+                if (grep { $_ eq $altnick } @{$altnicks{$nick}}) {
                     my $index = 0;
                     $index++ until @{$altnicks{$nick}}[$index] eq $altnick;
                     splice(@{$altnicks{$nick}}, $index, 1);
@@ -570,7 +571,7 @@ sub cmd_cnicks {
             $nickmode = " ";
             $channormals += 1;
         }
-        
+
         my $nick = $nickmode . $nick_data->{nick};
 
         push(@$this_column, $nick);
@@ -596,11 +597,11 @@ sub cmd_cnicks {
     my $realcolcount = scalar(keys %column);
     for my $j (0..$max_per_column - 1) {
         my $line = "";
-        
+
         for my $current_column (0..$realcolcount - 1) {
             my $c_col = $column{"col$current_column"};
             my $c_width = $column_width{"col$current_column"};
-            
+
             if ($j < scalar(@$c_col)) {
                 my $c_nick = @$c_col[$j];
                 my $nickmode = substr $c_nick, 0, 1;
@@ -629,11 +630,11 @@ sub cmd_cnicks {
         }
         $channel->print(substr($line, 0, -1), MSGLEVEL_CLIENTCRAP);
     }
-    
+
     $channel->print($channel->{name} . ": Total of $nick_count nicks [$chanops ops, $chanhalfops halfops, $chanvoices voices, $channormals normal]", MSGLEVEL_CLIENTCRAP);
 }
 
-load_colors;
+load_colors();
 
 my $BASE_CMD = 'color';
 Irssi::command_bind("$BASE_CMD set", \&cmd_color);
@@ -655,10 +656,10 @@ Irssi::command_bind('help', sub {
     $cmd =~ s/^\s+|\s+$//g; # Strip whitespace
     if ($cmd eq 'color') {
         display_help_color;
-        Irssi::signal_stop;
+        Irssi::signal_stop();
     } elsif ($cmd eq 'cnicks') {
         display_help_cnicks;
-        Irssi::signal_stop;
+        Irssi::signal_stop();
     }
 });
 
@@ -673,13 +674,13 @@ Irssi::signal_add_last('channel joined', sub {
     # also add an own option for colored names list, default = ON
 
     cmd_cnicks undef, $server, $channel;
-    
-    Irssi::signal_stop;
+
+    Irssi::signal_stop();
 });
 
 Irssi::signal_add_first('complete word', sub {
     # Add autocomplete for nicks when using the COLOR command
-    
+
     my ($strings, $window, $word, $linestart, $want_space) = @_;
     return if ($linestart eq '');
     my $cmd_prefix_chars = Irssi::settings_get_str('cmdchars');
@@ -687,7 +688,7 @@ Irssi::signal_add_first('complete word', sub {
 
     # Ensure we are dealing with the COLOR command
     # and the SET, SHOW or CLEAR subcommand
-    
+
     my ($color_cmd, $color_subcmd, $switch_param) = split " ", $linestart;
     return if (!$color_cmd or !$color_subcmd);
     $color_cmd = lc $color_cmd;
@@ -724,7 +725,7 @@ Irssi::signal_add_first('complete word', sub {
             foreach my $nick_data ($channel->nicks()) {
                 my $nick = $nick_data->{nick};
 
-                if ($nick =~ /^$word/i and !(grep {$_ eq $nick} @$strings)) { 
+                if ($nick =~ /^$word/i and !(grep {$_ eq $nick} @$strings)) {
                     push(@$strings, $nick);
                 }
             }
@@ -733,7 +734,7 @@ Irssi::signal_add_first('complete word', sub {
             # query and if the user is assigning a new nick a color
             my $query = $window->{active};
             my $nick = $query->{name};
-            if ($nick =~ /^$word/i and !(grep {$_ eq $nick} @$strings)) { 
+            if ($nick =~ /^$word/i and !(grep {$_ eq $nick} @$strings)) {
                 push(@$strings, $nick);
             }
         }
@@ -741,5 +742,5 @@ Irssi::signal_add_first('complete word', sub {
 
     @$strings = sort {lc $a cmp lc $b} @$strings;
 
-    Irssi::signal_stop;
+    Irssi::signal_stop();
 });
